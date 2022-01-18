@@ -3,6 +3,7 @@ package datasource
 import (
 	"time"
 
+	"github.com/c4pt0r/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -20,6 +21,12 @@ type Items struct {
 type MySQLDatasource struct {
 	dsn string
 	db  *gorm.DB
+}
+
+func newMySQLDatasource(dsn string) *MySQLDatasource {
+	return &MySQLDatasource{
+		dsn: dsn,
+	}
 }
 
 func (m *MySQLDatasource) Get(key []byte) (Item, error) {
@@ -45,6 +52,12 @@ func (m *MySQLDatasource) Init(dsn string) error {
 	}
 	m.db = db
 	m.dsn = dsn
+	// make sure table exists
+	err = db.AutoMigrate(&Items{})
+	if err != nil {
+		log.E(err)
+		return err
+	}
 	return nil
 }
 
